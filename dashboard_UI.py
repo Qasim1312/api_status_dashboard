@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 import pandas as pd
 import os
 import plotly.graph_objects as go
@@ -66,7 +67,11 @@ urls = {
 # Determine the appropriate CSV file path based on the environment
 CSV_FILE_PATH = f'website_status_{st.session_state["environment"].lower()}.csv'
 
-
+# Start auto-refresh only after the first load
+if not st.session_state['first_load']:
+    count = st_autorefresh(interval=300000, key="datarefresher")  # 300000 ms = 5 minutes
+else:
+    st.session_state['first_load'] = False
 
 def display_status_tables():
     # Add custom CSS for table styling
@@ -179,5 +184,5 @@ schedule.every(5).minutes.do(job)
 if __name__ == "__main__":
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(300)
 
