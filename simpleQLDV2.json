@@ -1,0 +1,122 @@
+{
+  "type": "root",
+  "properties": {
+    "uuid": "1c691c4b-a444-431a-af79-e7313fe7b8ad",
+    "id": "1c691c4b-a444-431a-af79-e7313fe7b8ad",
+    "step": "root",
+    "name": "root node",
+    "triggerPeriod": "daily"
+  },
+  "sequence": [
+    {
+      "id": "60114eb251d64be5a184d80ba4d27dcc",
+      "componentType": "switch",
+      "type": "condition",
+      "name": "if(current price SPY > Moving Average of Price SPY 200)",
+      "properties": {
+        "comparison": ">",
+        "x": {
+          "indicator": "current price",
+          "source": "SPY"
+        },
+        "y": {
+          "indicator": "Moving Average of Price",
+          "period": "200",
+          "source": "SPY"
+        }
+      },
+      "branches": {
+        "true": [
+          {
+            "id": "46d20311eb3c406283ac85b4f7feb129",
+            "componentType": "largeTask",
+            "type": "stock",
+            "name": "Buy Order QQQ",
+            "properties": {
+              "symbol": "QQQ"
+            }
+          }
+        ],
+        "false": [
+          {
+            "id": "4f2d3be6d8fd4777ba83d62320a4496c",
+            "componentType": "switch",
+            "type": "condition",
+            "name": "if(current price QQQ < Moving Average of Price QQQ 20)",
+            "properties": {
+              "comparison": "<",
+              "x": {
+                "indicator": "current price",
+                "source": "QQQ"
+              },
+              "y": {
+                "indicator": "Moving Average of Price",
+                "period": "20",
+                "source": "QQQ"
+              }
+            },
+            "branches": {
+              "true": [
+                {
+                  "id": "17e6e734749343659128b4dc8da282cb",
+                  "componentType": "switch",
+                  "type": "Sort",
+                  "name": "SortBy Relative Strength Index-10",
+                  "properties": {
+                    "select": {
+                      "function": "Top",
+                      "howmany": "1"
+                    },
+                    "sortby": {
+                      "function": "Relative Strength Index",
+                      "window": "10"
+                    }
+                  },
+                  "branches": {
+                    "Top-1": [
+                      {
+                        "id": "7e481b98c0a445469687d3ec09db07a7",
+                        "componentType": "largeTask",
+                        "type": "stock",
+                        "name": "Buy Order PSQ",
+                        "properties": {
+                          "symbol": "PSQ"
+                        }
+                      },
+                      {
+                        "id": "2b876415754447189810c5136ebf7afa",
+                        "componentType": "largeTask",
+                        "type": "stock",
+                        "name": "Buy Order SHY",
+                        "properties": {
+                          "symbol": "SHY"
+                        }
+                      },
+                      {
+                        "id": "aa9eba8a-d5ef-4c0d-aa26-fca3822d25a7",
+                        "componentType": "icon",
+                        "type": "icon",
+                        "name": "Interrupting icon"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "false": [
+                {
+                  "id": "8fee4927a7664500bfd4545d95934d2c",
+                  "componentType": "largeTask",
+                  "type": "stock",
+                  "name": "Buy Order QQQ",
+                  "properties": {
+                    "symbol": "QQQ"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
