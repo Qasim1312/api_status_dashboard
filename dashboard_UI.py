@@ -1,12 +1,9 @@
-import time
-import schedule
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 import pandas as pd
 import os
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from datetime import datetime
 from dashboard_logic import fetch_website_status, save_to_csv
 
 # Set page configuration
@@ -149,7 +146,6 @@ def plot_scatter(df, service_name):
     # Uptime/Downtime scatter plot
     fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Uptime/Downtime"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Uptime/Downtime'), row=1, col=1)
     # Pass/Fail scatter plot
-        # Pass/Fail scatter plot
     fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Pass/Fail"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Pass/Fail'), row=2, col=1)
 
     # Latency scatter plot
@@ -159,7 +155,7 @@ def plot_scatter(df, service_name):
     fig.update_layout(height=800, title_text=f"{service_name} Status Scatter Plots", showlegend=False)
     fig.update_xaxes(title_text="Time", row=3, col=1)
     fig.update_yaxes(title_text="Uptime / Downtime", row=1, col=1)
-    fig.update_yaxes(title_text="Pass / Fail", row=2, col=1)
+    fig.update_yaxes(title_text="Pass /  Fail", row=2, col=1)
     fig.update_yaxes(title_text="Latency (ms)", row=3, col=1)
 
     # Display the plots
@@ -172,23 +168,5 @@ def update_dashboard():
     save_to_csv(status_data, CSV_FILE_PATH)
     display_status_tables()
 
-def job():
-    if 'initialized' not in st.session_state:
-        initialize_dashboard()
-    update_dashboard()
-
-# Perform the initial load immediately
-job()
-
-# Check if the current minute is a multiple of 5
-current_minute = datetime.now().minute
-if current_minute % 5 == 0:
-    job()
-
-# Schedule the job to run every 5 minutes
-schedule.every(5).minutes.do(job)
-
-if __name__ == "__main__":
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+# Perform the initial load and subsequent refreshes
+update_dashboard()
