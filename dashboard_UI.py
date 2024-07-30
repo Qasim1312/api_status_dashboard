@@ -4,8 +4,6 @@ import pandas as pd
 import os
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import schedule
-import time
 from dashboard_logic import fetch_website_status, save_to_csv
 
 # Set page configuration
@@ -146,6 +144,7 @@ def plot_scatter(df, service_name):
     fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.1, subplot_titles=("Uptime/Downtime", "Pass/Fail", "Latency"))
 
     # Uptime/Downtime scatter plot
+       # Uptime/Downtime scatter plot
     fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Uptime/Downtime"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Uptime/Downtime'), row=1, col=1)
     # Pass/Fail scatter plot
     fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Pass/Fail"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Pass/Fail'), row=2, col=1)
@@ -170,19 +169,14 @@ def update_dashboard():
     save_to_csv(status_data, CSV_FILE_PATH)
     display_status_tables()
 
-def job():
-    if 'initialized' not in st.session_state:
-        initialize_dashboard()
-    update_dashboard()
-
 # Perform the initial load immediately
-job()
+update_dashboard()
 
 # Schedule the job to run every 5 minutes
-schedule.every(5).minutes.do(job)
+if not st.session_state['first_load']:
+    count = st_autorefresh(interval=300000, key="datarefresher")  # 300000 ms = 5 minutes
+else:
+    st.session_state['first_load'] = False
 
-if __name__ == "__main__":
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+
 
