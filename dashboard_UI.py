@@ -10,7 +10,7 @@ from datetime import datetime
 # Set page configuration
 st.set_page_config(page_title="Algozen Backtesting Service Dashboard", page_icon="🏂", layout="wide", initial_sidebar_state="expanded")
 
-# Initialize session state for history, first load, and environment selection
+# Initialize session state for history, first load, environment selection, and last update time
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 if 'first_load' not in st.session_state:
@@ -19,6 +19,8 @@ if 'environment' not in st.session_state:
     st.session_state['environment'] = 'Dev'  # Default to Dev
 if 'previous_environment' not in st.session_state:
     st.session_state['previous_environment'] = 'Dev'
+if 'last_update_time' not in st.session_state:
+    st.session_state['last_update_time'] = None
 
 # Function to initialize the dashboard title
 def initialize_dashboard():
@@ -98,7 +100,7 @@ def display_status_tables():
             color: black;
         }
         .status-table .error {
-            color: black;
+            color: black.
         }
         .status-table .icon {
             margin-left: 10px;
@@ -168,6 +170,15 @@ def update_dashboard():
     if current_minute % 5 != 0:
         return
 
+    # Check if the last update time is within the same 5-minute interval
+    last_update_time = st.session_state['last_update_time']
+    current_time = datetime.now()
+    if last_update_time and (current_time - last_update_time).seconds < 300:
+        return
+
+    # Update the last update time
+    st.session_state['last_update_time'] = current_time
+
     st.markdown("<hr style='border-top: 2px solid black;'>", unsafe_allow_html=True)
     status_data = fetch_website_status(urls)
     st.session_state['history'].append(status_data)
@@ -176,3 +187,4 @@ def update_dashboard():
 
 # Perform the initial load and subsequent refreshes
 update_dashboard()
+
