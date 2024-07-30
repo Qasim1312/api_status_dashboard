@@ -1,10 +1,10 @@
 import streamlit as st
-from streamlit_autorefresh import st_autorefresh
 import pandas as pd
 import os
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from dashboard_logic import fetch_website_status, save_to_csv
+import time
 
 # Set page configuration
 st.set_page_config(page_title="Algozen Backtesting Service Dashboard", page_icon="🏂", layout="wide", initial_sidebar_state="expanded")
@@ -18,6 +18,8 @@ if 'environment' not in st.session_state:
     st.session_state['environment'] = 'Dev'  # Default to Dev
 if 'previous_environment' not in st.session_state:
     st.session_state['previous_environment'] = 'Dev'
+if 'last_refresh_time' not in st.session_state:
+    st.session_state['last_refresh_time'] = time.time()
 
 # Function to initialize the dashboard title
 def initialize_dashboard():
@@ -67,7 +69,10 @@ CSV_FILE_PATH = f'website_status_{st.session_state["environment"].lower()}.csv'
 
 # Start auto-refresh only after the first load
 if not st.session_state['first_load']:
-    count = st_autorefresh(interval=300000, key="datarefresher")  # 300000 ms = 5 minutes
+    # Check if 5 minutes have passed since the last refresh
+    if time.time() - st.session_state['last_refresh_time'] >= 300:
+        st.session_state['last_refresh_time'] = time.time()
+        st.experimental_rerun()
 else:
     st.session_state['first_load'] = False
 
