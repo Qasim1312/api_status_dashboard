@@ -155,17 +155,24 @@ def plot_scatter(df, service_name):
     # Display the plots
     st.plotly_chart(fig, use_container_width=True)
 
-def update_dashboard():
+def update_dashboard(force_update=False):
     current_time = datetime.now()
     last_update_time = st.session_state.get('last_update_time')
 
-    if not last_update_time or (current_time - last_update_time) >= timedelta(minutes=5):
+    if force_update or not last_update_time or (current_time - last_update_time) >= timedelta(minutes=5):
         st.session_state['last_update_time'] = current_time
         st.markdown("<hr style='border-top: 2px solid black;'>", unsafe_allow_html=True)
         status_data = fetch_website_status(urls)
         st.session_state['history'].append(status_data)
         save_to_csv(status_data, CSV_FILE_PATH)
         display_status_tables()
+
+# Perform the initial load and subsequent refreshes
+if st.session_state['initial_load'] or count % 60 == 0:  # Initial load or every 5 minutes
+    update_dashboard(force_update=True)
+    st.session_state['initial_load'] = False
+else:
+    update_dashboard()
 
 
 # Perform the initial load and subsequent refreshes
