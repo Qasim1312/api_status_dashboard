@@ -5,7 +5,7 @@ import os
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from dashboard_logic import fetch_website_status, save_to_csv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Set page configuration
 st.set_page_config(page_title="Algozen Backtesting Service Dashboard", page_icon="🏂", layout="wide", initial_sidebar_state="expanded")
@@ -165,25 +165,22 @@ def plot_scatter(df, service_name):
     st.plotly_chart(fig, use_container_width=True)
 
 def update_dashboard():
-    # Check if the current minute is a multiple of 5
-    current_minute = datetime.now().minute
-    if current_minute % 5 != 0:
-        return
-
-    # Check if the last update time is within the same 5-minute interval
-    last_update_time = st.session_state['last_update_time']
+    # Get the current time
     current_time = datetime.now()
-    if last_update_time and (current_time - last_update_time).seconds < 300:
-        return
 
-    # Update the last update time
-    st.session_state['last_update_time'] = current_time
+    # Check if the last update time is set
+    last_update_time = st.session_state.get('last_update_time')
 
-    st.markdown("<hr style='border-top: 2px solid black;'>", unsafe_allow_html=True)
-    status_data = fetch_website_status(urls)
-    st.session_state['history'].append(status_data)
-    save_to_csv(status_data, CSV_FILE_PATH)
-    display_status_tables()
+    # If the last update time is not set or the difference is 5 minutes or more, update the dashboard
+    if not last_update_time or (current_time - last_update_time) >= timedelta(minutes=5):
+        # Update the last update time
+        st.session_state['last_update_time'] = current_time
+
+        st.markdown("<hr style='border-top: 2px solid black;'>", unsafe_allow_html=True)
+        status_data = fetch_website_status(urls)
+        st.session_state['history'].append(status_data)
+        save_to_csv(status_data, CSV_FILE_PATH)
+        display_status_tables()
 
 # Perform the initial load and subsequent refreshes
 update_dashboard()
