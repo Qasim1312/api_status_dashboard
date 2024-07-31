@@ -140,10 +140,10 @@ def plot_scatter(df, service_name):
 
     fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.1, subplot_titles=("Uptime/Downtime", "Pass/Fail", "Latency"))
 
-    # Uptime/Downtime scatter plot
+    # Uptime/Downtime scatter plot```
     fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Uptime/Downtime"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Uptime/Downtime'), row=1, col=1)
     # Pass/Fail scatter plot
-    fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=    history_df["Pass/Fail"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Pass/Fail'), row=2, col=1)
+    fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Pass/Fail"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Pass/Fail'), row=2, col=1)
 
     # Latency scatter plot
     fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Latency (ms)"].apply(lambda x: x if x != "error" else None), mode='markers', name='Latency'), row=3, col=1)
@@ -172,6 +172,7 @@ def update_dashboard(force_update=False):
             save_to_csv(data, f'website_status_{env.lower()}.csv')
         
         display_status_tables(st.session_state['environment'])
+        st.experimental_rerun()  # Force a rerun to update the UI
 
 # Perform the initial load and subsequent refreshes
 if st.session_state['initial_load'] or count % 60 == 0:  # Initial load or every 5 minutes
@@ -186,4 +187,3 @@ with st.expander("Debug Information"):
     st.write("CSV File Path:", CSV_FILE_PATH)
     st.write("Last Update Time:", st.session_state['last_update_time'])
     st.write("Number of URLs:", len(urls_dict[st.session_state['environment']]))
-
