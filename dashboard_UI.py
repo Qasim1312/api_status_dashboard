@@ -11,14 +11,11 @@ from datetime import datetime, timedelta
 st.set_page_config(page_title="Algozen Backtesting Service Dashboard", page_icon="🏂", layout="wide", initial_sidebar_state="expanded")
 
 # Initialize session state for history, first load, environment selection, and last update time
+# Initialize session state
 if 'history' not in st.session_state:
     st.session_state['history'] = []
-if 'first_load' not in st.session_state:
-    st.session_state['first_load'] = True
 if 'environment' not in st.session_state:
-    st.session_state['environment'] = 'Dev'  # Default to Dev
-if 'previous_environment' not in st.session_state:
-    st.session_state['previous_environment'] = 'Dev'
+    st.session_state['environment'] = 'Dev'
 if 'last_update_time' not in st.session_state:
     st.session_state['last_update_time'] = None
 
@@ -35,11 +32,12 @@ environment = st.selectbox('Select Environment', ['Dev', 'Staging', 'Prod'])
 st.session_state['environment'] = environment
 
 # Clear session state and displayed data if environment changes
-if st.session_state['environment'] != st.session_state['previous_environment']:
+if environment != st.session_state['environment']:
+    st.session_state['environment'] = environment
     st.session_state['history'] = []
-    st.session_state['first_load'] = True
-    st.session_state['previous_environment'] = st.session_state['environment']
-    st.query_params['rerun'] = 'true'
+    st.session_state['last_update_time'] = None
+    st.experimental_rerun()
+   # st.query_params['rerun'] = 'true'
 
 # URLs based on environment
 urls = {
@@ -165,22 +163,17 @@ def plot_scatter(df, service_name):
     st.plotly_chart(fig, use_container_width=True)
 
 def update_dashboard():
-    # Get the current time
     current_time = datetime.now()
-
-    # Check if the last update time is set
     last_update_time = st.session_state.get('last_update_time')
 
-    # If the last update time is not set or the difference is 5 minutes or more, update the dashboard
     if not last_update_time or (current_time - last_update_time) >= timedelta(minutes=5):
-        # Update the last update time
         st.session_state['last_update_time'] = current_time
-
         st.markdown("<hr style='border-top: 2px solid black;'>", unsafe_allow_html=True)
         status_data = fetch_website_status(urls)
         st.session_state['history'].append(status_data)
         save_to_csv(status_data, CSV_FILE_PATH)
         display_status_tables()
+
 
 # Perform the initial load and subsequent refreshes
 update_dashboard()
