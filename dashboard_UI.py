@@ -18,6 +18,8 @@ if 'environment' not in st.session_state:
     st.session_state['environment'] = 'Dev'
 if 'last_update_time' not in st.session_state:
     st.session_state['last_update_time'] = None
+if 'initial_load' not in st.session_state:
+    st.session_state['initial_load'] = True
 
 # Function to initialize the dashboard title
 def initialize_dashboard():
