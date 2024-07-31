@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from dashboard_logic import fetch_website_status, save_to_csv
+from dashboard_logic import fetch_website_status, save_to_csv, update_all_environments
 from datetime import datetime, timedelta
 
 # Set page configuration
@@ -17,12 +17,9 @@ if 'environment' not in st.session_state:
     st.session_state['environment'] = 'Dev'
 if 'last_update_time' not in st.session_state:
     st.session_state['last_update_time'] = None
-if 'initial_load' not in st.session_state:
-    st.session_state['initial_load'] = True
 
 # Function to initialize the dashboard title
 def initialize_dashboard():
-    st.session_state['initialized'] = True
     st.markdown("<h1 style='text-align: center;'>🏂 Algozen Backtesting Service Dashboard</h1>", unsafe_allow_html=True)
 
 # Call the initialize_dashboard function to display the title
@@ -60,7 +57,7 @@ urls = {
         {"url": "https://algozen.io/algo_view", "pass_method": "200 OK", "service_name": "AlgoView"},
         {"url": "https://algozen.io/logicboard", "pass_method": "200 OK", "service_name": "LogicBoard"},
     ]
-}[st.session_state['environment']]
+}
 
 # Determine the appropriate CSV file path based on the environment
 CSV_FILE_PATH = f'website_status_{st.session_state["environment"].lower()}.csv'
@@ -165,13 +162,11 @@ def update_dashboard(force_update=False):
         st.session_state['last_update_time'] = current_time
         st.markdown("<hr style='border-top: 2px solid black;'>", unsafe_allow_html=True)
         
-        for env in ['Dev', 'Staging', 'Prod']:
-            CSV_FILE_PATH = f'website_status_{env.lower()}.csv'
-            status_data = fetch_website_status(urls[env])
-            st.session_state['history'][env].append(status_data)
-            save_to_csv(status_data, CSV_FILE_PATH)
+        all_status_data = update_all_environments(urls)
+        st.session_state['history'] = all_status_data
         
         display_status_tables(st.session_state['environment'])
+
 
 # Perform the initial load and subsequent refreshes
 if count == 0 or count % 60 == 0:  # Initial load or every 5 minutes

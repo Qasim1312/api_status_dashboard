@@ -9,13 +9,17 @@ import json
 # Set up logging
 logging.basicConfig(level=logging.ERROR)
 
-def fetch_website_status(urls):
+def fetch_website_status(urls, environment):
     status_data = []
     timestamp = datetime.now()
     
     # Load the JSON data from the file
-    with open("simpleQLDV2.json") as json_file:
-        data_to_post = json.load(json_file)
+    try:
+        with open("simpleQLDV2.json") as json_file:
+            data_to_post = json.load(json_file)
+    except FileNotFoundError:
+        logging.error("simpleQLDV2.json file not found. Using empty dict instead.")
+        data_to_post = {}
     
     for entry in urls:
         url = entry["url"]
@@ -50,22 +54,32 @@ def fetch_website_status(urls):
         
         status_data.append({
             "Service Name": service_name,
-            "Uptime/Downtime": "normal" if received_any_response else "error",
-            "Pass/Fail": "normal" if is_up else "error",
-            "Latency (ms)": latency if latency is not None else "error",
-            "Last Check Time": timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            "Uptime/Downtime": 1 if received_any_response else 0,
+            "Pass/Fail": 1 if is_up else 0,
+            "Latency (ms)": latency if latency is not None else None,
+            "Last Check Time": timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            "Environment": environment
         })
 
     return status_data
 
-def save_to_csv(status_data, file_path):
+def save_to_csv(status_data, environment):
     # Create a DataFrame from the status data
     df = pd.DataFrame(status_data)
 
-    # Convert "normal" to 1 and "error" to 0 for CSV saving
-    df["Uptime/Downtime"] = df["Uptime/Downtime"].apply(lambda x: 1 if x == "normal" else 0)
-    df["Pass/Fail"] = df["Pass/Fail"].apply(lambda x: 1 if x == "normal" else 0)
-    df["Latency (ms)"] = df["Latency (ms)"].apply(lambda x: int(x) if x != "error" else None)
+    # Define the file path based on the environment
+    file_path = f'website_status_{environment.lower()}.csv'
+
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
     # Append to CSV
     df.to_csv(file_path, mode='a', header=not os.path.exists(file_path), index=False)
+
+def update_all_environments(urls):
+    all_status_data = []
+    for env in ['Dev', 'Staging', 'Prod']:
+        status_data = fetch_website_status(urls[env], env)
+        all_status_data.extend(status_data)
+        save_to_csv(status_data, env)
+    return all_status_data
