@@ -70,9 +70,6 @@ def save_to_csv(status_data, environment):
     # Define the file path based on the environment
     file_path = f'website_status_{environment.lower()}.csv'
 
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
     # Append to CSV
     df.to_csv(file_path, mode='a', header=not os.path.exists(file_path), index=False)
 
