@@ -172,7 +172,7 @@ def update_dashboard(force_update=False):
             save_to_csv(data, f'website_status_{env.lower()}.csv')
         
         display_status_tables(st.session_state['environment'])
-        st.experimental_rerun()  # Force a rerun to update the UI
+        st.query_params['rerun'] = 'true'  # Force a rerun to update the UI
 
 # Perform the initial load and subsequent refreshes
 if st.session_state['initial_load'] or count % 60 == 0:  # Initial load or every 5 minutes
