@@ -11,9 +11,8 @@ from datetime import datetime, timedelta
 st.set_page_config(page_title="Algozen Backtesting Service Dashboard", page_icon="🏂", layout="wide", initial_sidebar_state="expanded")
 
 # Initialize session state for history, first load, environment selection, and last update time
-# Initialize session state
 if 'history' not in st.session_state:
-    st.session_state['history'] = []
+    st.session_state['history'] = {'Dev': [], 'Staging': [], 'Prod': []}
 if 'environment' not in st.session_state:
     st.session_state['environment'] = 'Dev'
 if 'last_update_time' not in st.session_state:
@@ -31,6 +30,7 @@ initialize_dashboard()
 
 # Dropdown for selecting environment
 environment = st.selectbox('Select Environment', ['Dev', 'Staging', 'Prod'], key='environment_selector')
+st.session_state['environment'] = environment
 
 if environment != st.session_state['environment']:
     st.session_state['environment'] = environment
@@ -67,7 +67,7 @@ CSV_FILE_PATH = f'website_status_{st.session_state["environment"].lower()}.csv'
 # Start auto-refresh
 count = st_autorefresh(interval=300000, key="datarefresher")  # 300000 ms = 5 minutes
 
-def display_status_tables():
+def display_status_tables(env):
     # Add custom CSS for table styling
     st.markdown("""
         <style>
@@ -100,7 +100,7 @@ def display_status_tables():
         }
         </style>
     """, unsafe_allow_html=True)
-
+    CSV_FILE_PATH = f'website_status_{env.lower()}.csv'
     if os.path.exists(CSV_FILE_PATH):
         df = pd.read_csv(CSV_FILE_PATH)
         for service_name in df["Service Name"].unique():
@@ -164,24 +164,26 @@ def update_dashboard(force_update=False):
     if force_update or not last_update_time or (current_time - last_update_time) >= timedelta(minutes=5):
         st.session_state['last_update_time'] = current_time
         st.markdown("<hr style='border-top: 2px solid black;'>", unsafe_allow_html=True)
-        status_data = fetch_website_status(urls)
-        st.session_state['history'].append(status_data)
-        save_to_csv(status_data, CSV_FILE_PATH)
-        display_status_tables()
+        
+        for env in ['Dev', 'Staging', 'Prod']:
+            CSV_FILE_PATH = f'website_status_{env.lower()}.csv'
+            status_data = fetch_website_status(urls[env])
+            st.session_state['history'][env].append(status_data)
+            save_to_csv(status_data, CSV_FILE_PATH)
+        
+        display_status_tables(st.session_state['environment'])
 
 # Perform the initial load and subsequent refreshes
-if st.session_state['initial_load'] or count % 60 == 0:  # Initial load or every 5 minutes
+if count == 0 or count % 60 == 0:  # Initial load or every 5 minutes
     update_dashboard(force_update=True)
-    st.session_state['initial_load'] = False
 else:
     update_dashboard()
 
+# Display the current environment's data
+display_status_tables(st.session_state['environment'])
 
-# Perform the initial load and subsequent refreshes
-update_dashboard()
 with st.expander("Debug Information"):
     st.write("Current Environment:", st.session_state['environment'])
-    st.write("CSV File Path:", CSV_FILE_PATH)
     st.write("Last Update Time:", st.session_state['last_update_time'])
-    st.write("Number of URLs:", len(urls))
-
+    for env in ['Dev', 'Staging', 'Prod']:
+        st.write(f"Number of URLs for {env}:", len(urls[env]))
