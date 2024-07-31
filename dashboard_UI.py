@@ -143,7 +143,7 @@ def plot_scatter(df, service_name):
     # Uptime/Downtime scatter plot
     fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Uptime/Downtime"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Uptime/Downtime'), row=1, col=1)
     # Pass/Fail scatter plot
-    fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Pass/Fail"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Pass/Fail'), row=2, col=1)
+    fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=    history_df["Pass/Fail"].apply(lambda x: 1 if x == "normal" else 0), mode='markers', name='Pass/Fail'), row=2, col=1)
 
     # Latency scatter plot
     fig.add_trace(go.Scatter(x=history_df["Last Check Time"], y=history_df["Latency (ms)"].apply(lambda x: x if x != "error" else None), mode='markers', name='Latency'), row=3, col=1)
@@ -177,8 +177,6 @@ def update_dashboard(force_update=False):
 if st.session_state['initial_load'] or count % 60 == 0:  # Initial load or every 5 minutes
     update_dashboard(force_update=True)
     st.session_state['initial_load'] = False
-else:
-    update_dashboard()
 
 # Display the status tables for the selected environment
 display_status_tables(st.session_state['environment'])
