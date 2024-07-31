@@ -39,7 +39,7 @@ if st.session_state['environment'] != st.session_state['previous_environment']:
     st.session_state['history'] = []
     st.session_state['first_load'] = True
     st.session_state['previous_environment'] = st.session_state['environment']
-    st.experimental_set_query_params(rerun=True)
+    st.query_params['rerun'] = 'true'
 
 # URLs based on environment
 urls = {
