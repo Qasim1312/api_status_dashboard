@@ -28,16 +28,13 @@ def initialize_dashboard():
 initialize_dashboard()
 
 # Dropdown for selecting environment
-environment = st.selectbox('Select Environment', ['Dev', 'Staging', 'Prod'])
-st.session_state['environment'] = environment
+environment = st.selectbox('Select Environment', ['Dev', 'Staging', 'Prod'], key='environment_selector')
 
-# Clear session state and displayed data if environment changes
 if environment != st.session_state['environment']:
     st.session_state['environment'] = environment
     st.session_state['history'] = []
     st.session_state['last_update_time'] = None
     st.experimental_rerun()
-   # st.query_params['rerun'] = 'true'
 
 # URLs based on environment
 urls = {
@@ -173,4 +170,9 @@ def update_dashboard():
 
 # Perform the initial load and subsequent refreshes
 update_dashboard()
+with st.expander("Debug Information"):
+    st.write("Current Environment:", st.session_state['environment'])
+    st.write("CSV File Path:", CSV_FILE_PATH)
+    st.write("Last Update Time:", st.session_state['last_update_time'])
+    st.write("Number of URLs:", len(urls))
 
