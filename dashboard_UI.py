@@ -103,6 +103,11 @@ def display_status_tables():
 
     if os.path.exists(CSV_FILE_PATH):
         df = pd.read_csv(CSV_FILE_PATH)
+        
+        # Drop the "Environment" column if it exists
+        if 'Environment' in df.columns:
+            df = df.drop(columns=['Environment'])
+        
         for service_name in df["Service Name"].unique():
             st.subheader(f"{service_name} Status")
             latest_status = df[df["Service Name"] == service_name].tail(1)
