@@ -34,7 +34,7 @@ if environment != st.session_state['environment']:
     st.session_state['environment'] = environment
     st.session_state['history'] = []
     st.session_state['last_update_time'] = None
-    st.experimental_rerun()
+    st.query_params['rerun'] = 'true'
 
 # URLs based on environment
 urls = {
