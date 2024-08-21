@@ -4,9 +4,10 @@ import pandas as pd
 import os
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from dashboard_logic import fetch_website_status, save_to_csv,update_oauth_token
+from dashboard_logic import fetch_website_status
+from dashboard_logic import save_to_csv
+from dashboard_logic import update_oauth_token
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
 
 # Set page configuration
 st.set_page_config(page_title="Algozen Backtesting Service Dashboard", page_icon="🏂", layout="wide", initial_sidebar_state="expanded")
@@ -159,8 +160,7 @@ def plot_scatter(df, service_name):
     # Display the plots
     st.plotly_chart(fig, use_container_width=True)
 
-# Load .env file if it exists (for local development)
-load_dotenv()
+
 
 def get_env_variable(key):
     # First, try to get the variable from environment variables

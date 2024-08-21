@@ -1,4 +1,4 @@
-from turtle import st
+import streamlit as st
 import requests
 import pandas as pd
 import logging
@@ -6,14 +6,13 @@ import os
 import time
 import hashlib
 from datetime import datetime
-from dotenv import load_dotenv, set_key
 import json
 
 # Set up logging
 logging.basicConfig(level=logging.ERROR)
 
 # Load environment variables
-load_dotenv()
+
 
 # Initialize global variables
 OAUTH_TOKEN = os.getenv('OAUTH_TOKEN')
