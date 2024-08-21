@@ -4,8 +4,9 @@ import pandas as pd
 import os
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from dashboard_logic import fetch_website_status, save_to_csv
+from dashboard_logic import fetch_website_status, save_to_csv,update_oauth_token
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
 # Set page configuration
 st.set_page_config(page_title="Algozen Backtesting Service Dashboard", page_icon="🏂", layout="wide", initial_sidebar_state="expanded")
@@ -158,6 +159,33 @@ def plot_scatter(df, service_name):
     # Display the plots
     st.plotly_chart(fig, use_container_width=True)
 
+# Load .env file if it exists (for local development)
+load_dotenv()
+
+def get_env_variable(key):
+    # First, try to get the variable from environment variables
+    value = os.environ.get(key)
+    if value is not None:
+        return value
+    
+    # If not found in environment variables, try Streamlit secrets
+    # This will only work in Streamlit Cloud environment
+    try:
+        return st.secrets[key]
+    except:
+        return None
+
+def load_environment_variables():
+    global OAUTH_TOKEN, TOKEN_GENERATION_DATE
+    OAUTH_TOKEN = get_env_variable('OAUTH_TOKEN')
+    TOKEN_GENERATION_DATE = get_env_variable('TOKEN_GENERATION_DATE')
+
+# Call this function at the beginning of your script
+load_environment_variables()
+
+# Use the OAUTH_TOKEN from the environment
+oauth_token = update_oauth_token(os.getenv('OAUTH_TOKEN'))
+
 def update_dashboard(force_update=False):
     current_time = datetime.now()
     last_update_time = st.session_state.get('last_update_time')
@@ -165,7 +193,7 @@ def update_dashboard(force_update=False):
     if force_update or not last_update_time or (current_time - last_update_time) >= timedelta(minutes=5):
         st.session_state['last_update_time'] = current_time
         st.markdown("<hr style='border-top: 2px solid black;'>", unsafe_allow_html=True)
-        status_data = fetch_website_status(urls_dict)
+        status_data = fetch_website_status(urls_dict, oauth_token)
         
         for env, data in status_data.items():
             st.session_state['history'][env].append(data)

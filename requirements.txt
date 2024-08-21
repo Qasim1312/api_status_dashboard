@@ -4,3 +4,4 @@ pandas
 requests
 schedule
 plotly
+python-dotenv
